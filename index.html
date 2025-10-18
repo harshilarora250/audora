@@ -6,6 +6,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1800ad">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/U2MiemL.png">
+    <link rel="apple-touch-icon" href="https://i.imgur.com/U2MiemL.png">
     <title>Audora</title>
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkF1ZG9yYSIsCiAgInNob3J0X25hbWUiOiAiQXVkb3JhIiwKICAic3RhcnRfdXJsIjogIi8iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiM0RjQ2RTUiLAogICJ0aGVtZV9jb2xvciI6ICIjNEY0NkU1IiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxMDAgMTAwJyUzRSUzQ3RleHQgeT0nLjllbScgZm9udC1zaXplPSc5MCclM0UlRjAlOUYlOEUlQTclM0MvdGV4dCUzRSUzQy9zdmclM0UiLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCiAgICB9CiAgXQp9">
     <style>
@@ -334,14 +336,23 @@
             background: white;
             border-radius: 20px 20px 0 0;
             padding: 20px;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
+            transform: translateY(calc(100% - 60px));
+            transition: transform 0.3s ease;
             z-index: 1001;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
         }
 
         .settings-panel.active {
-            max-height: 400px;
+            transform: translateY(0);
+        }
+
+        .settings-handle {
+            width: 40px;
+            height: 5px;
+            background: #D1D5DB;
+            border-radius: 3px;
+            margin: 0 auto 15px;
+            cursor: pointer;
         }
 
         .settings-header {
@@ -414,7 +425,7 @@
 
         .fab-btn {
             position: fixed;
-            bottom: 30px;
+            bottom: 100px;
             right: 30px;
             width: 60px;
             height: 60px;
@@ -428,12 +439,16 @@
             justify-content: center;
             box-shadow: 0 4px 20px rgba(24, 0, 173, 0.4);
             cursor: pointer;
-            transition: transform 0.2s;
-            z-index: 99;
+            transition: bottom 0.3s ease, transform 0.2s;
+            z-index: 1000;
         }
 
         .fab-btn:active {
             transform: scale(0.9);
+        }
+
+        .fab-btn.raised {
+            bottom: 380px;
         }
 
         input[type="file"] {
@@ -454,6 +469,85 @@
         .empty-state-text {
             color: #9CA3AF;
             font-size: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .import-title {
+                font-size: 20px;
+            }
+
+            .wave-animation {
+                width: 150px;
+                height: 150px;
+                font-size: 60px;
+            }
+
+            .player-title {
+                font-size: 20px;
+            }
+
+            .control-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 24px;
+            }
+
+            .control-btn.small {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .import-grid {
+                grid-template-columns: repeat(4, 1fr);
+                gap: 10px;
+            }
+
+            .import-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+
+            .import-label {
+                font-size: 12px;
+            }
+
+            .speed-control {
+                grid-template-columns: repeat(2, 1fr);
+                display: grid;
+                gap: 10px;
+            }
+        }
+
+        /* Safe area for notched devices */
+        @supports (padding: max(0px)) {
+            .header {
+                padding-top: max(60px, env(safe-area-inset-top));
+            }
+
+            .player-screen {
+                padding-top: max(60px, env(safe-area-inset-top));
+            }
+
+            .fab-btn {
+                bottom: max(100px, calc(100px + env(safe-area-inset-bottom)));
+            }
+
+            .fab-btn.raised {
+                bottom: max(380px, calc(380px + env(safe-area-inset-bottom)));
+            }
+
+            .settings-panel {
+                padding-bottom: max(20px, env(safe-area-inset-bottom));
+            }
         }
     </style>
 </head>
@@ -522,7 +616,6 @@
             </div>
             
             <div class="player-controls">
-                <button class="control-btn small" onclick="toggleSettings()">—</button>
                 <button class="control-btn small" onclick="skipBackward()">⏮</button>
                 <button class="control-btn" id="playPauseBtn" onclick="togglePlayPause()">▶️</button>
                 <button class="control-btn small" onclick="skipForward()">⏭</button>
@@ -533,9 +626,10 @@
 
     <!-- Settings Panel -->
     <div class="settings-panel" id="settingsPanel">
+        <div class="settings-handle" onclick="toggleSettings()"></div>
         <div class="settings-header">
             <div class="settings-title">Playback Settings</div>
-            <button class="close-btn" onclick="toggleSettings()">-</button>
+            <button class="close-btn" onclick="toggleSettings()">—</button>
         </div>
         
         <div class="setting-item">
@@ -555,7 +649,7 @@
     </div>
 
     <!-- Floating Action Button -->
-    <button class="fab-btn" onclick="document.getElementById('fileInput').click()">+</button>
+    <button class="fab-btn" id="fabBtn" onclick="document.getElementById('fileInput').click()">+</button>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
@@ -611,6 +705,14 @@
             document.getElementById('splashScreen').classList.add('hidden');
             loadFromCache();
         }, 2000);
+
+        // Toggle settings and FAB position
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            const fab = document.getElementById('fabBtn');
+            panel.classList.toggle('active');
+            fab.classList.toggle('raised');
+        }
 
         // Load voices
         function loadVoices() {
@@ -848,8 +950,13 @@
             stopPlayback();
         }
 
-        function toggleSettings() {
-            document.getElementById('settingsPanel').classList.toggle('active');
+        function closePlayer() {
+            document.getElementById('playerScreen').classList.remove('active');
+            const panel = document.getElementById('settingsPanel');
+            const fab = document.getElementById('fabBtn');
+            panel.classList.remove('active');
+            fab.classList.remove('raised');
+            stopPlayback();
         }
 
         function setSpeed(speed) {
